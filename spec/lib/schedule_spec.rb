@@ -54,6 +54,19 @@ describe Icalendar::Recurrence::Schedule do
     end
   end
 
+  describe "#ice_cube_schedule" do
+    it "handles multiple exception dates properly" do
+      test_events = example_event :multiple_exdate
+      schedule = Schedule.new(test_events)
+      ice_cube_schedule = schedule.ice_cube_schedule
+
+      expect(ice_cube_schedule.occurring_at?(Time.parse("2014-02-03T16:00:00-08:00"))).to eq(true)
+      expect(ice_cube_schedule.occurring_at?(Time.parse("2014-02-10T16:00:00-08:00"))).to eq(false)
+      expect(ice_cube_schedule.occurring_at?(Time.parse("2014-02-17T16:00:00-08:00"))).to eq(false)
+      expect(ice_cube_schedule.occurring_at?(Time.parse("2014-02-24T16:00:00-08:00"))).to eq(true)
+    end
+  end
+
   context "given an event without an end time" do
     let(:schedule) do
       weekly_event = example_event :weekly_with_count # has 1 hour duration
