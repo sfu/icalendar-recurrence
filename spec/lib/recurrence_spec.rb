@@ -151,4 +151,22 @@ describe "Event#occurrences_between" do
       expect(occurrences.first.start_time).to eq(Time.parse("20140114T180000Z"))
     end
   end
+
+  context "excluded event repeating in same DST segment" do
+    let(:event) { example_event :exdate_in_same_dst }
+
+    it "does not occur" do
+      occurrences = event.occurrences_between(Time.parse("2018-09-04"), Time.parse("2018-12-31"))
+      expect(occurrences.map(&:start_time)).not_to include(Time.parse("20180925T170000Z"))
+    end
+  end
+
+  context "excluded event repeating in different DST segment" do
+    let(:event) { example_event :exdate_in_different_dst }
+
+    it "does not occur" do
+      occurrences = event.occurrences_between(Time.parse("2018-09-04"), Time.parse("2018-12-31"))
+      expect(occurrences.map(&:start_time)).not_to include(Time.parse("20181225T180000Z"))
+    end
+  end
 end

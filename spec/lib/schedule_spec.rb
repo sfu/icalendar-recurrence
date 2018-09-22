@@ -65,6 +65,21 @@ describe Icalendar::Recurrence::Schedule do
       expect(ice_cube_schedule.occurring_at?(Time.parse("2014-02-17T16:00:00-08:00"))).to eq(false)
       expect(ice_cube_schedule.occurring_at?(Time.parse("2014-02-24T16:00:00-08:00"))).to eq(true)
     end
+
+    it "returns schedule in the proper timezone observing DST" do
+      test_events = example_event :exdate_in_different_dst
+      schedule = Schedule.new(test_events)
+      ice_cube_schedule = schedule.ice_cube_schedule
+      start_times = ice_cube_schedule.next_occurrences(20, Time.parse('2018-09-01')).map(&:start_time)
+
+      # Before time change
+      expect(start_times).to include(Time.parse("2018-09-04T10:00:00-07:00"))
+      expect(start_times).not_to include(Time.parse("2018-09-04T10:00:00-08:00"))
+
+      # After time change
+      expect(start_times).not_to include(Time.parse("2018-11-06T10:00:00-07:00"))
+      expect(start_times).to include(Time.parse("2018-11-06T10:00:00-08:00"))
+    end
   end
 
   context "given an event without an end time" do

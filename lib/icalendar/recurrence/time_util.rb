@@ -5,10 +5,20 @@ module Icalendar
     module TimeUtil
       def datetime_to_time(datetime)
         raise ArgumentError, "Unsupported DateTime object passed (must be Icalendar::Values::DateTime#{datetime.class} passed instead)" unless supported_datetime_object?(datetime)
-        offset = timezone_offset(datetime.ical_params["tzid"], moment: datetime.to_date)
-        offset ||= datetime.strftime("%:z")
+        if datetime.respond_to?(:time_zone)
+          # Build time in the same timezone
+          original_tz = Time.zone
+          Time.zone = datetime.time_zone
+          time = Time.new(datetime.year, datetime.month, datetime.mday, datetime.hour, datetime.min, datetime.sec)
+          Time.zone = original_tz
+          time
+        else
+          # Time zone unavailable; build time based solely on UTC offset
+          offset = timezone_offset(datetime.ical_params["tzid"], moment: datetime.to_date)
+          offset ||= datetime.strftime("%:z")
 
-        Time.new(datetime.year, datetime.month, datetime.mday, datetime.hour, datetime.min, datetime.sec, offset)
+          Time.new(datetime.year, datetime.month, datetime.mday, datetime.hour, datetime.min, datetime.sec, offset)
+        end
       end
 
       def date_to_time(date)
